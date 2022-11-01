@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace dlloader
 {
@@ -27,7 +29,7 @@ namespace dlloader
 		** Return a shared pointer on an instance of class loaded through
 		** a dynamic library.
 		*/
-		virtual std::shared_ptr<T>	DLGetInstance() = 0;
+		virtual T DLGetInstance() = 0;
 
 		/*
 		** Correctly delete the instance of the "dynamically loaded" class.

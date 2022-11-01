@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <vector>
 #include "DLLoader.h"
 #include "IPlanet.h"
 
@@ -19,35 +20,27 @@ static const std::string bespinLibPath = "./libBespin.dylib";
 static const std::string tatooineLibPath = "./libTatooine.dylib";
 #endif
 
-/*
-** Using the smart pointer directly in an inner function because
-** the reference to its destructor contained in the dll is lost before
-** going out of the caller function's scope.
-*/
-void greetFromAPlanet(dlloader::DLLoader<IPlanet>& dlloader)
-{
-	std::shared_ptr<IPlanet> planet = dlloader.DLGetInstance();
-
-	planet->greet();
-}
-
-void greet(const std::string& path)
-{
-	dlloader::DLLoader<IPlanet> dlloader(path);
-
-	std::cout << "Loading " << path << std::endl;
-	dlloader.DLOpenLib();
-
-	greetFromAPlanet(dlloader);
-
-	std::cout << "Unloading " << path << std::endl;
-	dlloader.DLCloseLib();
-}
-
 int main()
 {
-	greet(tatooineLibPath);
-	greet(bespinLibPath);
+
+	auto planets = std::vector<Planet>{};
+	planets.reserve(5);
+
+	auto dlloader0 = std::make_shared<dlloader::DLLoader<Planet>>(tatooineLibPath);
+	auto dlloader1 = std::make_shared<dlloader::DLLoader<Planet>>(bespinLibPath);
+	
+	planets.emplace_back(dlloader0->DLGetInstance());
+	planets.emplace_back(dlloader0->DLGetInstance());
+	planets.emplace_back(dlloader1->DLGetInstance());
+	planets.emplace_back(dlloader1->DLGetInstance());
+	// planets.emplace_back(dlloader1.DLGetInstance());
+
+	planets.push_back(planets.back());
+	for(const auto& p : planets)
+	{
+		p.greet();
+	}
+
 
 	return 0;
 }

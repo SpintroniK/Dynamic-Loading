@@ -1,15 +1,19 @@
 #include "Bespin.h"
 
+#include <iostream>
+
 #if defined(__linux__) || defined(__APPLE__)
 extern "C"
 {
 	Bespin *allocator()
 	{
+        std::cout << "Allocate Bespin" << std::endl;
 		return new Bespin();
 	}
 
 	void deleter(Bespin *ptr)
 	{
+        std::cout << "Delete Bespin" << std::endl;
 		delete ptr;
 	}
 }
@@ -30,7 +34,7 @@ extern "C"
 }
 #endif
 
-void Bespin::greet()
+void Bespin::greet() const
 {
 	std::cout << "Greetings from Bespin !" << std::endl;
 }

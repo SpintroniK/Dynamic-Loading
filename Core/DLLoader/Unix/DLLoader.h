@@ -2,12 +2,14 @@
 
 #include <iostream>
 #include <dlfcn.h>
+
+#include "IPlanet.h"
 #include "IDLLoader.h"
 
 namespace dlloader
 {
 	template <class T>
-	class DLLoader : public IDLLoader<T>
+	class DLLoader : public std::enable_shared_from_this<DLLoader<T>>, public IDLLoader<T>
 	{
 
 	private:
@@ -25,41 +27,49 @@ namespace dlloader
 			_handle(nullptr), _pathToLib(pathToLib),
 			_allocClassSymbol(allocClassSymbol), _deleteClassSymbol(deleteClassSymbol)
 		{
-		}
-
-		~DLLoader() = default;
-
-		void DLOpenLib() override
-		{
-			if (!(_handle = dlopen(_pathToLib.c_str(), RTLD_NOW | RTLD_LAZY))) {
+			std::cout << "Open dl loader " << _pathToLib << std::endl;
+			if (!(_handle = dlopen(_pathToLib.c_str(), RTLD_NOW | RTLD_LAZY))) 
+			{
 				std::cerr << dlerror() << std::endl;
 			}
 		}
 
-		std::shared_ptr<T> DLGetInstance() override
+		~DLLoader()
 		{
-			using allocClass = T *(*)();
-			using deleteClass = void (*)(T *);
+			std::cout << "Close dl loader " << _pathToLib << std::endl;
+			DLCloseLib();
+		}
+
+		void DLOpenLib() override
+		{
+			if (!(_handle = dlopen(_pathToLib.c_str(), RTLD_NOW | RTLD_LAZY))) 
+			{
+				std::cerr << dlerror() << std::endl;
+			}
+		}
+
+		T DLGetInstance() override
+		{
+			using allocClass = IPlanet *(*)();
+			using deleteClass = void (*)(IPlanet *);
 
 
-			auto allocFunc = reinterpret_cast<allocClass>(
-					dlsym(_handle, _allocClassSymbol.c_str()));
-			auto deleteFunc = reinterpret_cast<deleteClass>(
-					dlsym(_handle, _deleteClassSymbol.c_str()));
+			const auto allocFunc = reinterpret_cast<allocClass>(dlsym(_handle, _allocClassSymbol.c_str()));
+			const auto deleteFunc = reinterpret_cast<deleteClass>(dlsym(_handle, _deleteClassSymbol.c_str()));
 
-			if (!allocFunc || !deleteFunc) {
+			if (!allocFunc || !deleteFunc) 
+			{
 				DLCloseLib();
 				std::cerr << dlerror() << std::endl;
 			}
 
-			return std::shared_ptr<T>(
-					allocFunc(),
-					[deleteFunc](T *p){ deleteFunc(p); });
+			return T{allocFunc(), [deleteFunc](auto* p) { deleteFunc(p); }, this->shared_from_this()};
 		}
 
 		void DLCloseLib() override
 		{
-			if (dlclose(_handle) != 0) {
+			if (dlclose(_handle) != 0) 
+			{
 				std::cerr << dlerror() << std::endl;
 			}
 		}

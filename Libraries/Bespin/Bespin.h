@@ -9,5 +9,5 @@ public:
 	Bespin() = default;
 	~Bespin() = default;
 
-	void greet() override;
+	void greet() const override;
 };

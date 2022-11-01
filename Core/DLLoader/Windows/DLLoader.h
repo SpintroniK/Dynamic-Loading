@@ -33,10 +33,10 @@ namespace dlloader
 			}
 		}
 
-		std::shared_ptr<T> DLGetInstance() override
+		T DLGetInstance() override
 		{
-			using allocClass = T * (*)();
-			using deleteClass = void(*)(T *);
+			using allocClass = IPlanet * (*)();
+			using deleteClass = void(*)(IPlanet *);
 
 			auto allocFunc = reinterpret_cast<allocClass>(
 				GetProcAddress(_handle, _allocClassSymbol.c_str()));
@@ -48,9 +48,8 @@ namespace dlloader
 				std::cerr << "Can't find allocator or deleter symbol in " << _pathToLib << std::endl;
 			}
 
-			return std::shared_ptr<T>(
-				allocFunc(),
-				[deleteFunc](T *p) { deleteFunc(p); });
+			return Planet{allocFunc(), 
+					[deleteFunc](IPlanet *p){ deleteFunc(p); }};
 		}
 
 		void DLCloseLib() override

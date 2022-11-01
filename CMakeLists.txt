@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(Greet-Core)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 ### Output directory ###
 set(CMAKE_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/Core/build)

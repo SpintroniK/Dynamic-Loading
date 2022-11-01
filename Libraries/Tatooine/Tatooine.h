@@ -9,5 +9,5 @@ public:
 	Tatooine() = default;
 	~Tatooine() = default;
 
-	void greet() override;
+	void greet() const override;
 };
