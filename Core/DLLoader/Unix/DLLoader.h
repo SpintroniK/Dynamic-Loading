@@ -50,8 +50,9 @@ namespace dlloader
 
 		T DLGetInstance() override
 		{
-			using allocClass = IPlanet *(*)();
-			using deleteClass = void (*)(IPlanet *);
+			using base_type = T::base_t;
+			using allocClass = base_type *(*)();
+			using deleteClass = void (*)(base_type *);
 
 
 			const auto allocFunc = reinterpret_cast<allocClass>(dlsym(_handle, _allocClassSymbol.c_str()));
@@ -63,7 +64,7 @@ namespace dlloader
 				std::cerr << dlerror() << std::endl;
 			}
 
-			return T{allocFunc(), [deleteFunc](auto* p) { deleteFunc(p); }, this->shared_from_this()};
+			return {std::shared_ptr<base_type>{allocFunc(), [deleteFunc](auto* p) { deleteFunc(p); }}, this->shared_from_this()};
 		}
 
 		void DLCloseLib() override

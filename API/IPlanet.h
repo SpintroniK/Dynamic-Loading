@@ -26,10 +26,11 @@ class Planet
 {
 public:
 
+    using base_t = IPlanet;
 
-    template <typename T, typename Deleter>
-    Planet(T* x, Deleter y, std::shared_ptr<dlloader::IDLLoader<Planet>> dloader) noexcept
-    : _dloader{std::move(dloader)}, _self{std::shared_ptr<T>(x, y)}
+    template <typename T>
+    Planet(std::shared_ptr<T> x, std::shared_ptr<dlloader::IDLLoader<Planet>> dloader) noexcept
+    : _dloader{std::move(dloader)}, _self{std::move(x)}
     {
     }
 
@@ -43,7 +44,7 @@ private:
 
 
     template <typename T>
-    struct model final : IPlanet
+    struct model final : base_t
     {
         model(T x) : _data{std::move(x)}
         {
@@ -58,5 +59,5 @@ private:
     };
 
     std::shared_ptr<const dlloader::IDLLoader<Planet>> _dloader;
-    std::shared_ptr<const IPlanet> _self;
+    std::shared_ptr<const base_t> _self;
 };
